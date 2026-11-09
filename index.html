@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>علی رضایی | توسعه‌دهنده فرانت‌اند</title>
+<meta name="description" content="رزومه علی رضایی، توسعه‌دهنده فرانت‌اند">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f2f5f7; --surface:#ffffff; --ink:#13202b; --muted:#5b6b78;
+  --line:#d8e0e6; --accent:#0e6f6a; --accent-soft:#dcefed;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f171d; --surface:#16212a; --ink:#e8eef2; --muted:#94a5b1;
+    --line:#26343f; --accent:#4fc3bb; --accent-soft:#16363a;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f171d; --surface:#16212a; --ink:#e8eef2; --muted:#94a5b1;
+  --line:#26343f; --accent:#4fc3bb; --accent-soft:#16363a;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Vazirmatn",Tahoma,"Segoe UI",sans-serif;
+  line-height:1.9; font-size:16px;
+}
+a{color:var(--accent)}
+a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:4px}
+
+.wrap{max-width:1040px;margin:0 auto;padding:48px 24px;display:grid;grid-template-columns:300px 1fr;gap:56px}
+
+/* Sidebar */
+aside{position:sticky;top:32px;align-self:start}
+.name{font-size:3rem;line-height:1.2;font-weight:800;margin:0 0 8px;letter-spacing:-.5px}
+.role{color:var(--accent);font-weight:600;margin:0 0 24px;font-size:1.1rem}
+.bio{color:var(--muted);margin:0 0 28px}
+.contact{list-style:none;padding:0;margin:0 0 28px;border-top:1px solid var(--line)}
+.contact li{padding:10px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;font-size:.95rem}
+.contact span{color:var(--muted)}
+.contact a{text-decoration:none;direction:ltr;unicode-bidi:embed}
+.contact a:hover{text-decoration:underline}
+.theme{background:none;border:1px solid var(--line);color:var(--ink);padding:6px 14px;border-radius:999px;cursor:pointer;font:inherit;font-size:.85rem}
+.theme:hover{border-color:var(--accent)}
+
+/* Main */
+section{margin-bottom:56px}
+h2{font-size:1.35rem;margin:0 0 24px;font-weight:800}
+
+.job{display:grid;grid-template-columns:130px 1fr;gap:20px;padding:0 0 28px;margin:0 0 28px;border-bottom:1px solid var(--line)}
+.job:last-child{border-bottom:0;margin-bottom:0}
+.when{color:var(--muted);font-size:.9rem;padding-top:4px}
+.job h3{margin:0;font-size:1.1rem;font-weight:600}
+.job .org{color:var(--accent);font-size:.95rem;margin:0 0 8px}
+.job ul{margin:0;padding-inline-start:20px;color:var(--ink)}
+.job li{margin-bottom:4px}
+
+.skills{display:flex;flex-wrap:wrap;gap:10px;margin:0;padding:0;list-style:none}
+.skills li{background:var(--accent-soft);color:var(--accent);padding:4px 16px;border-radius:999px;font-size:.92rem;font-weight:600}
+
+.project{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px 24px;margin-bottom:16px}
+.project h3{margin:0 0 4px;font-size:1.05rem}
+.project p{margin:0;color:var(--muted)}
+
+footer{text-align:center;color:var(--muted);font-size:.85rem;padding:0 24px 40px}
+
+@media (max-width:820px){
+  .wrap{grid-template-columns:1fr;gap:32px;padding:32px 20px}
+  aside{position:static}
+  .name{font-size:2.4rem}
+  .job{grid-template-columns:1fr;gap:4px}
+}
+@media print{
+  .theme{display:none}
+  body{background:#fff;color:#000}
+  aside{position:static}
+}
+</style>
+</head>
+<body>
+<div class="wrap"><aside id="side"></aside><main id="main"></main></div>
+<footer id="foot"></footer>
+<script>
+(function(){
+var $=function(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+var safe=function(u){return /^(https?:|mailto:)/i.test(u||"")?u:"#"};
+var link=function(h,t){var a=$("a",null,t);a.href=safe(h);return a};
+var strip=function(u){return (u||"").replace(/^https?:\/\//,"")};
+
+function load(){
+  return fetch("/api/resume").then(function(r){return r.ok?r.json():null}).catch(function(){return null})
+    .then(function(d){return d||fetch("/resume.default.json").then(function(r){return r.json()})});
+}
+function sec(title){var s=$("section");s.appendChild($("h2",null,title));return s}
+function job(j){
+  var a=$("article","job");a.appendChild($("div","when",j.when));
+  var b=$("div");b.appendChild($("h3",null,j.title));b.appendChild($("p","org",j.org));
+  if(j.points&&j.points.length){var u=$("ul");j.points.forEach(function(p){u.appendChild($("li",null,p))});b.appendChild(u)}
+  a.appendChild(b);return a;
+}
+function row(label,node){var li=$("li");li.appendChild($("span",null,label));li.appendChild(node);return li}
+
+function render(d){
+  document.title=d.name+" | "+d.role;
+  var side=document.getElementById("side");side.textContent="";
+  side.appendChild($("h1","name",d.name));
+  side.appendChild($("p","role",d.role));
+  side.appendChild($("p","bio",d.bio));
+  var ul=$("ul","contact");
+  if(d.email)ul.appendChild(row("ایمیل",link("mailto:"+d.email,d.email)));
+  if(d.github)ul.appendChild(row("گیت‌هاب",link(d.github,strip(d.github))));
+  if(d.linkedin)ul.appendChild(row("لینکدین",link(d.linkedin,strip(d.linkedin))));
+  if(d.city){var b=$("b",null,d.city);b.style.fontWeight=400;ul.appendChild(row("شهر",b))}
+  side.appendChild(ul);
+  var btn=$("button","theme","تغییر تم");btn.type="button";side.appendChild(btn);
+  btn.addEventListener("click",function(){
+    var root=document.documentElement,cur=root.getAttribute("data-theme");
+    var dark=cur==="dark"||(!cur&&matchMedia("(prefers-color-scheme: dark)").matches);
+    var next=dark?"light":"dark";root.setAttribute("data-theme",next);
+    try{localStorage.setItem("theme",next)}catch(e){}
+  });
+
+  var main=document.getElementById("main");main.textContent="";
+  if(d.jobs.length){var s=sec("سوابق کاری");d.jobs.forEach(function(j){s.appendChild(job(j))});main.appendChild(s)}
+  if(d.projects.length){var s2=sec("پروژه‌ها");d.projects.forEach(function(p){
+    var c=$("div","project"),h=$("h3");h.appendChild(p.url?link(p.url,p.title):document.createTextNode(p.title));
+    c.appendChild(h);c.appendChild($("p",null,p.desc));s2.appendChild(c)});main.appendChild(s2)}
+  if(d.skills.length){var s3=sec("مهارت‌ها"),sk=$("ul","skills");d.skills.forEach(function(k){sk.appendChild($("li",null,k))});s3.appendChild(sk);main.appendChild(s3)}
+  if(d.education.length){var s4=sec("تحصیلات");d.education.forEach(function(j){s4.appendChild(job(j))});main.appendChild(s4)}
+  document.getElementById("foot").textContent="© "+new Date().toLocaleDateString("fa-IR",{year:"numeric"})+" "+d.name;
+}
+try{var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}
+load().then(render);
+})();
+</script>
+</body>
+</html>

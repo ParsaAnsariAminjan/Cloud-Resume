@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>مدیریت رزومه</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f2f5f7;--surface:#fff;--ink:#13202b;--muted:#5b6b78;--line:#d8e0e6;--accent:#0e6f6a;--danger:#b3261e}
+@media (prefers-color-scheme: dark){:root{--bg:#0f171d;--surface:#16212a;--ink:#e8eef2;--muted:#94a5b1;--line:#26343f;--accent:#4fc3bb;--danger:#ff8a80}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Vazirmatn",Tahoma,sans-serif;line-height:1.8}
+.page{max-width:760px;margin:0 auto;padding:32px 20px 120px}
+h1{font-size:1.6rem;margin:0 0 24px}
+h2{font-size:1.1rem;margin:36px 0 12px;display:flex;justify-content:space-between;align-items:center}
+label{display:block;font-size:.88rem;color:var(--muted);margin:12px 0 4px}
+input,textarea{width:100%;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 12px}
+input[dir=ltr],textarea[dir=ltr]{text-align:left}
+textarea{min-height:90px;resize:vertical}
+input:focus-visible,textarea:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.item{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:4px 16px 16px;margin-bottom:12px}
+.item .bar{display:flex;gap:8px;justify-content:flex-end;padding-top:10px}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:6px 14px}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+button.del{color:var(--danger)}
+#login{max-width:360px;margin:15vh auto;padding:0 20px}
+#login button{margin-top:16px;width:100%}
+.savebar{position:fixed;inset:auto 0 0 0;background:var(--surface);border-top:1px solid var(--line);padding:12px 20px;display:flex;gap:12px;align-items:center;justify-content:center}
+#msg{min-height:1.5em;font-size:.9rem}
+#msg.err{color:var(--danger)}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <h1>ورود به مدیریت</h1>
+  <label for="pw">رمز عبور</label>
+  <input id="pw" type="password" dir="ltr" autocomplete="current-password">
+  <button class="primary" id="enter" type="button">ورود</button>
+  <p id="lmsg" class="err" role="alert"></p>
+</div>
+
+<div class="page" id="app" hidden>
+  <h1>ویرایش رزومه</h1>
+  <div id="simple"></div>
+
+  <h2>سوابق کاری <button type="button" data-add="jobs">افزودن</button></h2>
+  <div id="jobs"></div>
+
+  <h2>پروژه‌ها <button type="button" data-add="projects">افزودن</button></h2>
+  <div id="projects"></div>
+
+  <h2>مهارت‌ها</h2>
+  <label for="skills">با ویرگول جدا کنید</label>
+  <input id="skills" dir="ltr">
+
+  <h2>تحصیلات <button type="button" data-add="education">افزودن</button></h2>
+  <div id="education"></div>
+
+  <div class="savebar">
+    <button class="primary" id="save" type="button">ذخیره</button>
+    <a href="/" target="_blank" rel="noopener">دیدن سایت</a>
+    <span id="msg" role="status"></span>
+  </div>
+</div>
+
+<script>
+(function(){
+var $=function(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+var $id=function(i){return document.getElementById(i)};
+var password="";
+try{password=sessionStorage.getItem("pw")||""}catch(e){}
+
+var SIMPLE=[["name","نام"],["role","عنوان شغلی"],["bio","معرفی کوتاه","area"],["email","ایمیل","ltr"],["github","آدرس گیت‌هاب","ltr"],["linkedin","آدرس لینکدین","ltr"],["city","شهر"]];
+var LISTS={
+  jobs:[["when","بازه زمانی"],["title","عنوان شغلی"],["org","شرکت"],["points","دستاوردها (هر خط یک مورد)","lines"]],
+  projects:[["title","نام پروژه"],["url","لینک","ltr"],["desc","توضیح","area"]],
+  education:[["when","بازه زمانی"],["title","مدرک"],["org","دانشگاه"]]
+};
+
+function field(parent,def,value,key){
+  var id="f"+Math.random().toString(36).slice(2);
+  var l=$("label",null,def[1]);l.htmlFor=id;
+  var type=def[2],inp;
+  if(type==="area"||type==="lines"){inp=$("textarea")}else{inp=$("input")}
+  inp.id=id;inp.setAttribute("data-k",key||def[0]);
+  if(type==="ltr")inp.dir="ltr";
+  inp.value=type==="lines"?(value||[]).join("\n"):(value||"");
+  parent.appendChild(l);parent.appendChild(inp);
+}
+function addItem(list,data){
+  var box=$id(list),item=$("div","item");
+  LISTS[list].forEach(function(def){field(item,def,data&&data[def[0]])});
+  var bar=$("div","bar");
+  var up=$("button",null,"بالا"),dn=$("button",null,"پایین"),rm=$("button","del","حذف");
+  [up,dn,rm].forEach(function(b){b.type="button"});
+  up.onclick=function(){if(item.previousElementSibling)box.insertBefore(item,item.previousElementSibling)};
+  dn.onclick=function(){if(item.nextElementSibling)box.insertBefore(item.nextElementSibling,item)};
+  rm.onclick=function(){if(confirm("این مورد حذف شود؟"))item.remove()};
+  bar.append(up,dn,rm);item.appendChild(bar);box.appendChild(item);
+}
+function fill(d){
+  var s=$id("simple");s.textContent="";
+  SIMPLE.forEach(function(def){field(s,def,d[def[0]])});
+  ["jobs","projects","education"].forEach(function(k){$id(k).textContent="";(d[k]||[]).forEach(function(it){addItem(k,it)})});
+  $id("skills").value=(d.skills||[]).join(", ");
+}
+function collect(){
+  var d={};
+  $id("simple").querySelectorAll("[data-k]").forEach(function(i){d[i.getAttribute("data-k")]=i.value.trim()});
+  Object.keys(LISTS).forEach(function(k){
+    d[k]=Array.prototype.map.call($id(k).children,function(item){
+      var o={};
+      item.querySelectorAll("[data-k]").forEach(function(i){
+        var key=i.getAttribute("data-k");
+        o[key]=key==="points"?i.value.split("\n").map(function(x){return x.trim()}).filter(Boolean):i.value.trim();
+      });
+      return o;
+    });
+  });
+  d.skills=$id("skills").value.split(/[,،]/).map(function(x){return x.trim()}).filter(Boolean);
+  return d;
+}
+function msg(t,err){var m=$id("msg");m.textContent=t;m.className=err?"err":""}
+function api(method,body){
+  return fetch("/api/resume",{method:method,headers:{"Authorization":"Bearer "+password,"content-type":"application/json"},body:body})
+}
+function loadData(){
+  return fetch("/api/resume").then(function(r){return r.ok?r.json():null}).catch(function(){return null})
+    .then(function(d){return d||fetch("/resume.default.json").then(function(r){return r.json()})});
+}
+function enter(){
+  $id("lmsg").textContent="";
+  api("POST").then(function(r){
+    if(!r.ok)throw 0;
+    try{sessionStorage.setItem("pw",password)}catch(e){}
+    return loadData();
+  }).then(function(d){fill(d);$id("login").hidden=true;$id("app").hidden=false})
+  .catch(function(){$id("lmsg").textContent="رمز عبور درست نیست یا سرور پاسخ نمی‌دهد."});
+}
+$id("enter").onclick=function(){password=$id("pw").value;enter()};
+$id("pw").addEventListener("keydown",function(e){if(e.key==="Enter"){password=this.value;enter()}});
+document.querySelectorAll("[data-add]").forEach(function(b){b.onclick=function(){addItem(b.getAttribute("data-add"))}});
+$id("save").onclick=function(){
+  msg("در حال ذخیره...");
+  api("PUT",JSON.stringify(collect())).then(function(r){
+    return r.json().then(function(j){if(!r.ok)throw new Error(j.error||"خطا");msg("ذخیره شد.")})
+  }).catch(function(e){msg("ذخیره نشد: "+e.message,true)});
+};
+if(password)enter();
+})();
+</script>
+</body>
+</html>
