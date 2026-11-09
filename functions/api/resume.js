@@ -26,7 +26,8 @@ export async function onRequestGet({ env }) {
 }
 
 export async function onRequestPost({ request, env }) {
-  return (await authorized(request, env)) ? reply('{"ok":true}') : reply('{"error":"unauthorized"}', 401);
+  if (!env.ADMIN_PASSWORD) return reply('{"error":"ADMIN_PASSWORD is not set on this deployment"}', 500);
+  return (await authorized(request, env)) ? reply('{"ok":true}') : reply('{"error":"wrong password"}', 401);
 }
 
 export async function onRequestPut({ request, env }) {
